@@ -1,0 +1,68 @@
+# Claude Code
+.claude/
+CLAUDE.md
+.worktrees/
+
+# Documentation (generated, not tracked)
+docs/
+tests/
+
+# Docker
+docker/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+.eggs/
+*.so
+venv/
+.venv/
+env/
+
+# Database
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (for frontend deps if any)
+node_modules/
+
+# Dependencies
+Gemfile.lock
+
+# Archives
+*.zip
+*.tar.gz
+
+# Secrets
+*.pem
+*.key
+credentials.json
