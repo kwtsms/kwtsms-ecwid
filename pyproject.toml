@@ -1,6 +1,6 @@
 [project]
 name = "kwtsms-ecwid"
-version = "0.1.0"
+version = "1.0.0"
 description = "kwtSMS SMS notification plugin for Ecwid e-commerce stores"
 requires-python = ">=3.11"
 authors = [
