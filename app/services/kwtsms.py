@@ -85,35 +85,51 @@ class KwtSMSClient:
             raise KwtSMSError(str(e))
 
     async def login(self) -> dict:
-        """Verify credentials by calling /balance/. Returns success status and balance."""
+        """Verify credentials by calling /balance/. Returns success status and balance.
+
+        API returns: {"result":"OK","available":150,"purchased":1000}
+        """
         try:
             data = await self._request("balance", {})
-            if "balance" in data:
-                return {"success": True, "balance": int(data["balance"])}
+            # API returns "available" for current balance (not "balance")
+            if data.get("result") == "OK" and "available" in data:
+                return {"success": True, "balance": int(data["available"])}
+            # Fallback: some accounts may use a different key
+            if "available" in data:
+                return {"success": True, "balance": int(data["available"])}
             return {"success": False, "message": "Unexpected response format"}
         except KwtSMSError as e:
-            return {"success": False, "message": str(e.message)}
+            # Map authentication failures to a generic message to prevent enumeration
+            if e.code in ("403", "ERR003", "ERR004", "ERR005"):
+                return {"success": False, "message": "Invalid credentials. Please check your username and password."}
+            return {"success": False, "message": "Unable to connect to gateway. Please try again."}
 
     async def get_balance(self) -> int:
-        """Fetch current SMS credit balance."""
+        """Fetch current SMS credit balance.
+
+        API returns: {"result":"OK","available":150,"purchased":1000}
+        """
         data = await self._request("balance", {})
-        balance = int(data.get("balance", 0))
+        # API uses "available" for current usable balance
+        balance = int(data.get("available", data.get("balance", 0)))
         await set_sync_data("balance", balance)
         return balance
 
     async def get_senderids(self) -> list[str]:
-        """Fetch available Sender IDs for the account."""
+        """Fetch available Sender IDs for the account.
+
+        API returns: {"result":"OK","senderid":["KWT-SMS","MYAPP"]}
+        """
         data = await self._request("senderid", {})
-        # Response format may vary; extract sender ID strings
         senderids = []
         if isinstance(data, list):
+            # Raw list of sender IDs
             senderids = [str(s.get("name", s)) if isinstance(s, dict) else str(s) for s in data]
-        elif isinstance(data, dict) and "senderids" in data:
-            senderids = [str(s.get("name", s)) if isinstance(s, dict) else str(s) for s in data["senderids"]]
-        elif isinstance(data, dict) and "data" in data:
-            items = data["data"]
-            if isinstance(items, list):
-                senderids = [str(s.get("name", s)) if isinstance(s, dict) else str(s) for s in items]
+        elif isinstance(data, dict):
+            # Primary key is "senderid" (singular) per API docs
+            raw = data.get("senderid", data.get("senderids", data.get("data", [])))
+            if isinstance(raw, list):
+                senderids = [str(s.get("name", s)) if isinstance(s, dict) else str(s) for s in raw]
         await set_sync_data("senderids", senderids)
         return senderids
 
@@ -132,7 +148,8 @@ class KwtSMSClient:
 
     async def validate_numbers(self, numbers: list[str]) -> dict:
         """Validate phone numbers via /validate/ endpoint."""
-        data = await self._request("validate", {"numbers": ",".join(numbers)})
+        # API field is "mobile" (not "numbers")
+        data = await self._request("validate", {"mobile": ",".join(numbers)})
         return data
 
     async def send(self, recipient: str, message: str, sender_id: str, test: bool = True) -> dict:
@@ -172,7 +189,7 @@ class KwtSMSClient:
         # 5. Build payload and send
         payload = {
             "sender": sender_id,
-            "numbers": normalized,
+            "mobile": normalized,   # API field is "mobile" not "numbers"
             "message": cleaned,
             "test": 1 if test else 0,
         }
@@ -237,7 +254,7 @@ class KwtSMSClient:
             batch = valid_numbers[i : i + KWTSMS_BATCH_SIZE]
             payload = {
                 "sender": sender_id,
-                "numbers": ",".join(batch),
+                "mobile": ",".join(batch),   # API field is "mobile" not "numbers"
                 "message": cleaned,
                 "test": 1 if test else 0,
             }

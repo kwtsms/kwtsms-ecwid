@@ -6,6 +6,7 @@ from app.database import get_setting, get_sync_data, set_setting
 from app.models import APIResponse, BalanceResponse, GatewayLoginRequest, GatewayLoginResponse, TestSMSRequest
 from app.services.encryption import decrypt, encrypt
 from app.services.kwtsms import KwtSMSClient
+from app.services.sms import _log_sms
 from app.utils.logger import get_logger
 
 router = APIRouter()
@@ -105,8 +106,10 @@ async def send_test_sms(body: TestSMSRequest) -> APIResponse:
     client = KwtSMSClient(username, password)
     try:
         result = await client.send(body.phone, body.message, body.sender_id, test=True)
+        # Log to sms_log so the Logs tab shows test sends
+        await _log_sms("test", body.phone, body.message, "test", result)
         if result.get("success"):
-            return APIResponse(success=True, message="Test SMS sent", data=result)
+            return APIResponse(success=True, message="Sent successfully (test mode)", data=result)
         return APIResponse(success=False, message=result.get("error", "Send failed"))
     except Exception as e:
         await logger.error(f"Test SMS send error: {e}")
