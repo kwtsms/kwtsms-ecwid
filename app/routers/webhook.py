@@ -5,7 +5,7 @@ import asyncio
 from fastapi import APIRouter, Request, Response
 
 from app.config import get_settings
-from app.database import fetch_one, get_setting
+from app.database import execute_query, fetch_one, get_setting
 from app.models import EcwidWebhookPayload
 from app.services.ecwid import EcwidClient, verify_webhook_signature
 from app.services.sms import process_order_created, process_order_updated
@@ -17,6 +17,18 @@ logger = get_logger("webhook")
 # Track processed event IDs to deduplicate
 _processed_events: set[str] = set()
 _MAX_PROCESSED_CACHE = 1000
+
+
+async def _handle_app_uninstalled(payload: EcwidWebhookPayload) -> None:
+    """Clear all stored credentials and disable plugin on app uninstall."""
+    try:
+        credential_keys = ("kwtsms_username", "kwtsms_password", "ecwid_access_token", "kwtsms_sender_id")
+        for key in credential_keys:
+            await execute_query("DELETE FROM settings WHERE key = ?", (key,))
+        await execute_query("UPDATE settings SET value = '0' WHERE key = 'plugin_enabled'")
+        await logger.info(f"App uninstalled from store {payload.storeId}: credentials cleared")
+    except Exception as e:
+        await logger.error(f"Failed to clean up after uninstall: {e}")
 
 
 async def _process_order_event(payload: EcwidWebhookPayload) -> None:
@@ -102,6 +114,9 @@ async def handle_ecwid_webhook(request: Request) -> Response:
     )
 
     # Process asynchronously after returning 200
-    asyncio.create_task(_process_order_event(payload))
+    if payload.eventType == "application.uninstalled":
+        asyncio.create_task(_handle_app_uninstalled(payload))
+    else:
+        asyncio.create_task(_process_order_event(payload))
 
     return Response(status_code=200, content='{"status": "ok"}')

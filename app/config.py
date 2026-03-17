@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     sync_hour: int = 3
     sync_minute: int = 0
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 @lru_cache

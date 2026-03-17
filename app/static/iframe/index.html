@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>kwtSMS for Ecwid</title>
   <link rel="stylesheet" href="https://djqizrxa6f10j.cloudfront.net/ecwid-sdk/css/1.3.21/ecwid-app-ui.css">
-  <link rel="stylesheet" href="../css/app.css">
+  <link rel="stylesheet" href="/static/iframe/css/app.css">
 </head>
 <body class="normalized">
 
@@ -82,7 +82,7 @@
           <div class="fieldset-row">
             <label class="field-label" data-i18n="general.admin_phones">Admin Phone Numbers</label>
             <input type="text" class="field-input" id="admin_phones" placeholder="96598765432, 96598765433">
-            <div class="field-hint">Comma-separated. Receive SMS on new orders.</div>
+            <div class="field-hint" data-i18n="general.admin_phones_hint">Comma-separated. Receive SMS on new orders.</div>
           </div>
           <div class="form-actions">
             <button class="btn btn-primary" onclick="Settings.save()" data-i18n="common.save">Save</button>
@@ -368,7 +368,7 @@
   </div><!-- #app-root -->
 
   <script src="https://djqizrxa6f10j.cloudfront.net/ecwid-sdk/js/1.3.0/ecwid-app.js"></script>
-  <script src="../js/app.js"></script>
+  <script src="/static/iframe/js/app.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       App.init();

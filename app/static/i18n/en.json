@@ -11,6 +11,7 @@
   "general.admin_phones": "Admin Phone Numbers",
   "general.test_mode": "Test Mode",
   "general.test_mode_desc": "When enabled, SMS sends do not consume credits.",
+  "general.admin_phones_hint": "Comma-separated. Receive SMS on new orders.",
   "gateway.username": "API Username",
   "gateway.password": "API Password",
   "gateway.login": "Login / Verify",

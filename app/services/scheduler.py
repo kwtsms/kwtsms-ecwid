@@ -1,5 +1,7 @@
 """APScheduler daily sync job for balance, senderids, coverage."""
 
+import logging
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.config import get_settings
@@ -9,6 +11,7 @@ from app.services.kwtsms import KwtSMSClient
 from app.utils.logger import get_logger
 
 logger = get_logger("scheduler")
+_log = logging.getLogger("kwtsms.scheduler")
 
 _scheduler: AsyncIOScheduler | None = None
 
@@ -75,7 +78,7 @@ def start_scheduler() -> None:
         replace_existing=True,
     )
     _scheduler.start()
-    logger.info("Scheduler started")
+    _log.info("Scheduler started")
 
 
 def stop_scheduler() -> None:
@@ -84,7 +87,7 @@ def stop_scheduler() -> None:
     if _scheduler:
         _scheduler.shutdown(wait=False)
         _scheduler = None
-        logger.info("Scheduler stopped")
+        _log.info("Scheduler stopped")
 
 
 async def trigger_sync_now() -> None:
