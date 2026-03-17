@@ -92,7 +92,8 @@ async def create_template(body: TemplateCreate) -> APIResponse:
     except Exception as e:
         if "UNIQUE constraint" in str(e):
             return APIResponse(success=False, message=f"Template already exists for {body.event_type}/{body.lang}")
-        return APIResponse(success=False, message=str(e))
+        await logger.error(f"Failed to create template: {e}")
+        return APIResponse(success=False, message="Failed to create template")
 
 
 @router.put("/{template_id}")

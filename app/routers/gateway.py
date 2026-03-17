@@ -81,7 +81,8 @@ async def get_balance() -> BalanceResponse | APIResponse:
         synced_at = sync["synced_at"] if sync else ""
         return BalanceResponse(balance=balance, synced_at=synced_at)
     except Exception as e:
-        return APIResponse(success=False, message=str(e))
+        await logger.error(f"Failed to fetch balance: {e}")
+        return APIResponse(success=False, message="Failed to fetch balance from gateway")
     finally:
         await client.close()
 
@@ -108,7 +109,8 @@ async def send_test_sms(body: TestSMSRequest) -> APIResponse:
             return APIResponse(success=True, message="Test SMS sent", data=result)
         return APIResponse(success=False, message=result.get("error", "Send failed"))
     except Exception as e:
-        return APIResponse(success=False, message=str(e))
+        await logger.error(f"Test SMS send error: {e}")
+        return APIResponse(success=False, message="Failed to send test SMS")
     finally:
         await client.close()
 
@@ -136,7 +138,8 @@ async def get_senderids() -> APIResponse:
         finally:
             await client.close()
     except Exception as e:
-        return APIResponse(success=False, message=str(e))
+        await logger.error(f"Failed to fetch sender IDs: {e}")
+        return APIResponse(success=False, message="Failed to fetch sender IDs from gateway")
 
 
 @router.get("/coverage")
@@ -162,4 +165,5 @@ async def get_coverage() -> APIResponse:
         finally:
             await client.close()
     except Exception as e:
-        return APIResponse(success=False, message=str(e))
+        await logger.error(f"Failed to fetch coverage: {e}")
+        return APIResponse(success=False, message="Failed to fetch coverage from gateway")

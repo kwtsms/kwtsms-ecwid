@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.database import init_db
 from app.routers import gateway, logs, settings, templates, webhook
+from app.routers.templates import seed_default_templates
 from app.services.scheduler import start_scheduler, stop_scheduler
 from app.utils.logger import get_logger
 
@@ -20,6 +21,7 @@ logger = get_logger("main")
 async def lifespan(app: FastAPI):
     # Startup
     await init_db()
+    await seed_default_templates()
     start_scheduler()
     await logger.info("Application started")
     yield
