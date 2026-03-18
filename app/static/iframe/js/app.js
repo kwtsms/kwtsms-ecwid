@@ -175,7 +175,7 @@ var Settings = (function () {
       setField('default_language', s.default_language || 'en');
       setField('admin_phones', s.admin_phones || '');
       setField('debug_enabled', s.debug_enabled === '1');
-      if (s.kwtsms_username && s.kwtsms_username !== '***') showGatewayConnected();
+      if (s.kwtsms_username) showGatewayConnected();
     }).catch(function () {});
   }
 
@@ -232,6 +232,9 @@ var Gateway = (function () {
         if (res.success) {
           populateSenderIDs(res.sender_ids || []);
           updateBalance(res.balance);
+          // Clear credential fields so username is not left visible in plain text (OBS-001)
+          document.getElementById('kwtsms_username').value = '';
+          document.getElementById('kwtsms_password').value = '';
           Settings.load();
           loadCoverage();
           hideError();
@@ -293,7 +296,10 @@ var Gateway = (function () {
         return;
       }
       var items = res.data.coverage;
-      if (!items.length) { container.appendChild(text('No coverage data.')); return; }
+      if (!items.length) {
+        container.appendChild(text('No coverage data available for this account. Contact kwtSMS support to activate international coverage.'));
+        return;
+      }
       items.slice(0, 50).forEach(function (c) {
         var name = c.name || c.country || '';
         var cost = c.cost || c.price || '';
