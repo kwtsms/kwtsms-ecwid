@@ -1,6 +1,7 @@
 """Ecwid webhook event handler."""
 
 import asyncio
+from typing import Callable
 
 from fastapi import APIRouter, Request, Response
 
@@ -19,14 +20,25 @@ _processed_events: set[str] = set()
 _MAX_PROCESSED_CACHE = 1000
 
 
+def _task_done_callback(task: asyncio.Task) -> None:
+    """Log exceptions from background tasks so they are not silently swallowed."""
+    if not task.cancelled() and task.exception() is not None:
+        asyncio.get_event_loop().create_task(
+            logger.error(f"Webhook background task failed: {task.exception()}")
+        )
+
+
 async def _handle_app_uninstalled(payload: EcwidWebhookPayload) -> None:
-    """Clear all stored credentials and disable plugin on app uninstall."""
+    """Clear all stored credentials, logs, and disable plugin on app uninstall."""
     try:
         credential_keys = ("kwtsms_username", "kwtsms_password", "ecwid_access_token", "kwtsms_sender_id")
         for key in credential_keys:
             await execute_query("DELETE FROM settings WHERE key = ?", (key,))
         await execute_query("UPDATE settings SET value = '0' WHERE key = 'plugin_enabled'")
-        await logger.info(f"App uninstalled from store {payload.storeId}: credentials cleared")
+        # Delete SMS and debug logs per privacy policy commitment
+        await execute_query("DELETE FROM sms_log")
+        await execute_query("DELETE FROM debug_log")
+        await logger.info(f"App uninstalled from store {payload.storeId}: credentials and logs cleared")
     except Exception as e:
         await logger.error(f"Failed to clean up after uninstall: {e}")
 
@@ -34,6 +46,12 @@ async def _handle_app_uninstalled(payload: EcwidWebhookPayload) -> None:
 async def _process_order_event(payload: EcwidWebhookPayload) -> None:
     """Process an order webhook event asynchronously."""
     try:
+        # Check plugin is enabled before doing any work
+        plugin_enabled = await get_setting("plugin_enabled")
+        if plugin_enabled != "1":
+            await logger.info("Plugin disabled, skipping webhook processing")
+            return
+
         # Get stored Ecwid credentials
         access_token = await get_setting("ecwid_access_token")
         if not access_token:
@@ -79,10 +97,13 @@ async def handle_ecwid_webhook(request: Request) -> Response:
     """Receive Ecwid webhook events. Returns 200 immediately, processes asynchronously."""
     body = await request.body()
 
-    # Verify signature
+    # Verify signature — reject if client_secret is not configured (no bypass allowed)
     settings = get_settings()
     signature = request.headers.get("X-Ecwid-Webhook-Signature", "")
-    if settings.ecwid_client_secret and not verify_webhook_signature(body, signature, settings.ecwid_client_secret):
+    if not settings.ecwid_client_secret:
+        await logger.warning("Webhook rejected: ECWID_CLIENT_SECRET not configured")
+        return Response(status_code=401, content='{"error": "Server misconfiguration"}')
+    if not verify_webhook_signature(body, signature, settings.ecwid_client_secret):
         await logger.warning("Invalid webhook signature")
         return Response(status_code=401, content='{"error": "Invalid signature"}')
 
@@ -113,10 +134,11 @@ async def handle_ecwid_webhook(request: Request) -> Response:
         f"Received webhook: {payload.eventType} entity={payload.entityId} store={payload.storeId}"
     )
 
-    # Process asynchronously after returning 200
+    # Process asynchronously after returning 200; callback logs any unhandled exceptions
     if payload.eventType == "application.uninstalled":
-        asyncio.create_task(_handle_app_uninstalled(payload))
+        task = asyncio.create_task(_handle_app_uninstalled(payload))
     else:
-        asyncio.create_task(_process_order_event(payload))
+        task = asyncio.create_task(_process_order_event(payload))
+    task.add_done_callback(_task_done_callback)
 
     return Response(status_code=200, content='{"status": "ok"}')

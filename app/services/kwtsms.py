@@ -19,6 +19,9 @@ from app.utils.phone import mask_phone, normalize_phone, verify_local
 
 logger = get_logger("kwtsms")
 
+# Module-level per-phone rate limit tracker shared across all client instances
+_phone_send_times: dict[str, float] = {}
+
 
 class KwtSMSError(Exception):
     """Custom exception for kwtSMS API errors."""
@@ -46,7 +49,6 @@ class KwtSMSClient:
             headers={"Content-Type": "application/json", "Accept": "application/json"},
         )
         self._last_request_time: float = 0.0
-        self._phone_send_times: dict[str, float] = {}
 
     async def close(self):
         await self._client.aclose()
@@ -176,9 +178,9 @@ class KwtSMSClient:
         if not cleaned:
             return {"success": False, "error": "Message is empty after cleaning"}
 
-        # 4. Check per-phone rate limit
+        # 4. Check per-phone rate limit (module-level dict, survives across client instances)
         now = time.monotonic()
-        last_send = self._phone_send_times.get(normalized, 0)
+        last_send = _phone_send_times.get(normalized, 0)
         if now - last_send < KWTSMS_MIN_SEND_INTERVAL:
             remaining = KWTSMS_MIN_SEND_INTERVAL - (now - last_send)
             await logger.warning(
@@ -199,8 +201,8 @@ class KwtSMSClient:
         except KwtSMSError as e:
             return {"success": False, "error": e.message, "code": e.code}
 
-        # 6. Update per-phone tracker
-        self._phone_send_times[normalized] = time.monotonic()
+        # 6. Update module-level per-phone tracker
+        _phone_send_times[normalized] = time.monotonic()
 
         # 7. Extract response fields
         result = {

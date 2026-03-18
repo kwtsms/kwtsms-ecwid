@@ -20,6 +20,21 @@ _ENCRYPTED_KEYS = {"kwtsms_password", "kwtsms_username", "ecwid_access_token"}
 # Keys that should never be returned to the frontend
 _HIDDEN_KEYS = {"kwtsms_password", "kwtsms_username", "ecwid_access_token", "encryption_key"}
 
+# Allowlist of keys that can be set via the PUT API (prevents arbitrary key injection)
+_ALLOWED_SETTINGS_KEYS = {
+    "plugin_enabled",
+    "app_language",
+    "store_name",
+    "admin_phone",
+    "kwtsms_username",
+    "kwtsms_password",
+    "kwtsms_sender_id",
+    "ecwid_store_id",
+    "ecwid_access_token",
+    "test_mode",
+    "app_debug",
+}
+
 
 def _mask_value(key: str, value: str) -> str:
     """Mask sensitive values for API responses. Empty values are returned as-is."""
@@ -56,6 +71,8 @@ async def get_single_setting(key: str) -> SettingResponse | APIResponse:
 @router.put("/{key}")
 async def update_single_setting(key: str, body: dict) -> APIResponse:
     """Update a single setting. Encrypts sensitive values."""
+    if key not in _ALLOWED_SETTINGS_KEYS:
+        return APIResponse(success=False, message="Unknown setting key")
     value = body.get("value", "")
     if key in _ENCRYPTED_KEYS and value:
         value = encrypt(str(value))
@@ -71,7 +88,7 @@ async def update_bulk_settings(body: dict) -> APIResponse:
     for item in items:
         key = item.get("key", "")
         value = item.get("value", "")
-        if not key:
+        if not key or key not in _ALLOWED_SETTINGS_KEYS:
             continue
         if key in _ENCRYPTED_KEYS and value:
             value = encrypt(str(value))

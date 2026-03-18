@@ -1,6 +1,7 @@
 """SMS template management API endpoints."""
 
 from fastapi import APIRouter
+from pydantic import BaseModel
 
 from app.database import execute_query, fetch_all, fetch_one
 from app.models import APIResponse, TemplateCreate, TemplateResponse, TemplateUpdate
@@ -13,6 +14,11 @@ logger = get_logger("templates")
 
 _VALID_EVENT_TYPES = {"order.created", "order.payment_updated", "order.fulfillment_updated"}
 _VALID_LANGS = {"en", "ar"}
+
+
+class PreviewRequest(BaseModel):
+    body: str
+    lang: str = "auto"
 
 # Default templates seeded on first install
 _DEFAULT_TEMPLATES = [
@@ -133,10 +139,10 @@ async def delete_template(template_id: int) -> APIResponse:
 
 
 @router.post("/preview")
-async def preview_template(body: dict) -> dict:
+async def preview_template(body: PreviewRequest) -> dict:
     """Render a template with sample data and return preview with page count."""
-    template_body = body.get("body", "")
-    lang = body.get("lang", "auto")
+    template_body = body.body
+    lang = body.lang
 
     # Sample data for preview
     sample_order = {

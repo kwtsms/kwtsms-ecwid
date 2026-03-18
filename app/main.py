@@ -36,11 +36,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS: allow all origins (required for Ecwid iframe embedding)
+# CORS: allow all origins (required for Ecwid iframe embedding).
+# allow_credentials must not be True with wildcard origin — browsers reject it.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

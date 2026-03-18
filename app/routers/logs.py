@@ -1,6 +1,6 @@
 """Log viewer API endpoints."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from app.database import execute_query, fetch_all, fetch_one
 from app.models import APIResponse
@@ -120,7 +120,7 @@ async def get_log_entry(log_id: int) -> dict:
 
 
 @router.delete("")
-async def delete_logs(older_than_days: int = 30) -> APIResponse:
+async def delete_logs(older_than_days: int = Query(30, ge=0)) -> APIResponse:
     """Delete SMS log entries older than N days."""
     if older_than_days == 0:
         await execute_query("DELETE FROM sms_log")
