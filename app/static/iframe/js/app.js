@@ -380,6 +380,7 @@ var Templates = (function () {
       : API.post('/api/templates', { event_type: eventType, lang: _currentLang, body: body });
     fn.then(function (res) {
       if (res.success !== false) { Toast.show(i18n('common.success')); load(); }
+      else { Toast.show(res.message || i18n('common.error'), 'error'); }
     });
   }
 

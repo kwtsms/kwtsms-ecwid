@@ -20,18 +20,28 @@ _ENCRYPTED_KEYS = {"kwtsms_password", "kwtsms_username", "ecwid_access_token"}
 # Keys that should never be returned to the frontend
 _HIDDEN_KEYS = {"kwtsms_password", "kwtsms_username", "ecwid_access_token", "encryption_key"}
 
-# Allowlist of keys that can be set via the PUT API (prevents arbitrary key injection)
+# Allowlist of keys that can be set via the PUT API (prevents arbitrary key injection).
+# Must match keys used by the frontend (app.js) and internal init flows.
 _ALLOWED_SETTINGS_KEYS = {
+    # General tab
     "plugin_enabled",
-    "app_language",
+    "test_mode",
+    "default_language",
+    "admin_phones",
     "store_name",
-    "admin_phone",
+    # Gateway
     "kwtsms_username",
     "kwtsms_password",
     "kwtsms_sender_id",
+    # Ecwid (set by /init endpoint)
     "ecwid_store_id",
     "ecwid_access_token",
-    "test_mode",
+    # Integrations tab
+    "integration_order.created",
+    "integration_order.payment_updated",
+    "integration_order.fulfillment_updated",
+    # Logs tab
+    "debug_enabled",
     "app_debug",
 }
 
@@ -85,6 +95,7 @@ async def update_single_setting(key: str, body: dict) -> APIResponse:
 async def update_bulk_settings(body: dict) -> APIResponse:
     """Bulk update settings."""
     items = body.get("settings", [])
+    updated = 0
     for item in items:
         key = item.get("key", "")
         value = item.get("value", "")
@@ -93,8 +104,9 @@ async def update_bulk_settings(body: dict) -> APIResponse:
         if key in _ENCRYPTED_KEYS and value:
             value = encrypt(str(value))
         await set_setting(key, str(value))
-    await logger.info(f"Bulk updated {len(items)} settings")
-    return APIResponse(success=True, message=f"Updated {len(items)} settings")
+        updated += 1
+    await logger.info(f"Bulk updated {updated} settings")
+    return APIResponse(success=True, message=f"Updated {updated} settings")
 
 
 @router.post("/init")
