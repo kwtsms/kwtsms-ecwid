@@ -253,7 +253,14 @@ var Gateway = (function () {
     if (!confirm(i18n('common.confirm_delete'))) return;
     API.put('/api/settings/kwtsms_username', { value: '' })
       .then(function () { return API.put('/api/settings/kwtsms_password', { value: '' }); })
-      .then(function () { Settings.showGatewayForm(); Toast.show('Disconnected'); });
+      .then(function () {
+        Settings.showGatewayForm();
+        updateBalance(undefined);
+        populateSenderIDs([]);
+        var coverageEl = document.getElementById('coverage-list');
+        if (coverageEl) { clearEl(coverageEl); coverageEl.appendChild(text('Not loaded yet. Please verify gateway credentials.')); }
+        Toast.show('Disconnected');
+      });
   }
 
   function loadSenderIDs() {

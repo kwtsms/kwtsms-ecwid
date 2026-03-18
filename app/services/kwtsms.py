@@ -136,11 +136,23 @@ class KwtSMSClient:
         return senderids
 
     async def get_coverage(self) -> list[dict]:
-        """Fetch supported countries and pricing."""
+        """Fetch supported countries and pricing.
+
+        API returns: {"result":"OK","prefixes":["965","966","971",...]}
+        """
+        # Map common GCC country prefixes to names
+        _PREFIX_NAMES = {
+            "965": "Kuwait", "966": "Saudi Arabia", "971": "UAE",
+            "973": "Bahrain", "974": "Qatar", "968": "Oman",
+        }
         data = await self._request("coverage", {})
         coverage = []
         if isinstance(data, list):
             coverage = data
+        elif isinstance(data, dict) and "prefixes" in data:
+            raw = data["prefixes"]
+            if isinstance(raw, list):
+                coverage = [{"prefix": p, "name": _PREFIX_NAMES.get(p, p)} for p in raw]
         elif isinstance(data, dict) and "coverage" in data:
             coverage = data["coverage"]
         elif isinstance(data, dict) and "data" in data:
