@@ -106,6 +106,8 @@ async def update_template(template_id: int, body: TemplateUpdate) -> APIResponse
     updates = []
     params = []
     if body.body is not None:
+        if not body.body.strip():
+            return APIResponse(success=False, message="Template body cannot be empty")
         updates.append("body = ?")
         params.append(body.body)
     if body.is_active is not None:

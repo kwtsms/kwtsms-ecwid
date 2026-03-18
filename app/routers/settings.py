@@ -22,8 +22,8 @@ _HIDDEN_KEYS = {"kwtsms_password", "kwtsms_username", "ecwid_access_token", "enc
 
 
 def _mask_value(key: str, value: str) -> str:
-    """Mask sensitive values for API responses."""
-    if key in _HIDDEN_KEYS:
+    """Mask sensitive values for API responses. Empty values are returned as-is."""
+    if key in _HIDDEN_KEYS and value:
         return "***"
     return value
 
@@ -57,7 +57,7 @@ async def get_single_setting(key: str) -> SettingResponse | APIResponse:
 async def update_single_setting(key: str, body: dict) -> APIResponse:
     """Update a single setting. Encrypts sensitive values."""
     value = body.get("value", "")
-    if key in _ENCRYPTED_KEYS:
+    if key in _ENCRYPTED_KEYS and value:
         value = encrypt(str(value))
     await set_setting(key, str(value))
     await logger.info(f"Setting updated: {key}")
@@ -73,7 +73,7 @@ async def update_bulk_settings(body: dict) -> APIResponse:
         value = item.get("value", "")
         if not key:
             continue
-        if key in _ENCRYPTED_KEYS:
+        if key in _ENCRYPTED_KEYS and value:
             value = encrypt(str(value))
         await set_setting(key, str(value))
     await logger.info(f"Bulk updated {len(items)} settings")
