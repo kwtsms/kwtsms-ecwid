@@ -69,3 +69,11 @@ async def iframe_page():
     if index_path.exists():
         return FileResponse(str(index_path))
     return JSONResponse(status_code=404, content={"error": "Iframe page not found"})
+
+
+@app.get("/privacy-policy")
+async def privacy_policy():
+    path = static_dir / "privacy-policy.html"
+    if path.exists():
+        return FileResponse(str(path))
+    return JSONResponse(status_code=404, content={"error": "Not found"})
