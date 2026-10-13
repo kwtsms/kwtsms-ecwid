@@ -55,7 +55,8 @@ class KwtSMSClient:
 
     async def _request(self, endpoint: str, payload: dict) -> dict:
         """Send a POST request to the kwtSMS API with rate limiting."""
-        # Enforce rate limit (max 2 requests/second)
+        # Client-side pacing: max 2 requests/second, well under the API limit of 10/second.
+        # 2026-10-13 13:15 +03: comment corrected, the API limit is 10 req/s (was described as 2).
         now = time.monotonic()
         elapsed = now - self._last_request_time
         if elapsed < KWTSMS_RATE_LIMIT_SECONDS:
