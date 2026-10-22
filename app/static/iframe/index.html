@@ -70,7 +70,8 @@
               <input type="checkbox" id="test_mode" checked>
               <span class="toggle-slider"></span>
             </label>
-            <div class="field-hint" data-i18n="general.test_mode_desc">When enabled, SMS sends do not consume credits.</div>
+            <!-- 2026-10-22 15:36 +03: test mode hint corrected. Test messages hold credits until deleted from the Sending Queue. -->
+            <div class="field-hint" data-i18n="general.test_mode_desc">When enabled, messages are queued but not delivered. Credits are held until you delete them from the Sending Queue.</div>
           </div>
           <div class="fieldset-row">
             <label class="field-label" data-i18n="general.language">Default Language</label>

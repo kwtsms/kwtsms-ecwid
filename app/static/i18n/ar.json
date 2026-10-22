@@ -10,7 +10,7 @@
   "general.language": "اللغة الافتراضية",
   "general.admin_phones": "أرقام هاتف المدير",
   "general.test_mode": "وضع الاختبار",
-  "general.test_mode_desc": "عند التفعيل، لا تُستهلك رصيد الرسائل.",
+  "general.test_mode_desc": "عند التفعيل، توضع الرسائل في قائمة الانتظار ولا تُرسل. يبقى رصيدها محجوزًا حتى تحذفها من قائمة الإرسال.",
   "general.admin_phones_hint": "مفصولة بفواصل. استلام رسائل على الطلبات الجديدة.",
   "gateway.username": "اسم المستخدم",
   "gateway.password": "كلمة المرور",
