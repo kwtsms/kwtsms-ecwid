@@ -97,7 +97,7 @@ async def handle_ecwid_webhook(request: Request) -> Response:
     """Receive Ecwid webhook events. Returns 200 immediately, processes asynchronously."""
     body = await request.body()
 
-    # Verify signature — reject if client_secret is not configured (no bypass allowed)
+    # Verify signature; reject if client_secret is not configured (no bypass allowed)
     settings = get_settings()
     signature = request.headers.get("X-Ecwid-Webhook-Signature", "")
     if not settings.ecwid_client_secret:
