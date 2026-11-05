@@ -5,6 +5,7 @@ import time
 
 import httpx
 
+from app import __version__  # 2026-11-05 15:00 +03: version for the User-Agent, #939
 from app.config import (
     KWTSMS_BATCH_DELAY,
     KWTSMS_BATCH_SIZE,
@@ -18,6 +19,10 @@ from app.utils.message import clean_message
 from app.utils.phone import mask_phone, normalize_phone, verify_local
 
 logger = get_logger("kwtsms")
+
+# 2026-11-05 15:00 +03: sent on every API call so kwtSMS can count accounts per integration
+# (name and version only, no personal data), #939
+USER_AGENT = f"kwtsms-ecwid/{__version__}"
 
 # Module-level per-phone rate limit tracker shared across all client instances
 _phone_send_times: dict[str, float] = {}
@@ -46,7 +51,8 @@ class KwtSMSClient:
         self._client = httpx.AsyncClient(
             base_url=settings.kwtsms_api_base_url,
             timeout=30.0,
-            headers={"Content-Type": "application/json", "Accept": "application/json"},
+            # 2026-11-05 15:00 +03: User-Agent identifies the integration, #939
+            headers={"Content-Type": "application/json", "Accept": "application/json", "User-Agent": USER_AGENT},
         )
         self._last_request_time: float = 0.0
 

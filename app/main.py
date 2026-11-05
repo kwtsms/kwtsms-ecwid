@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from app import __version__  # 2026-11-05 15:00 +03: single version source, #939
 from app.database import init_db
 from app.routers import gateway, logs, settings, templates, webhook
 from app.routers.templates import seed_default_templates
@@ -32,7 +33,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="kwtSMS Ecwid Plugin",
-    version="1.0.0",
+    version=__version__,  # 2026-11-05 15:00 +03: single version source (app.__version__), #939
     lifespan=lifespan,
 )
 
@@ -60,7 +61,7 @@ app.include_router(gateway.router, prefix="/api/gateway")
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "version": "1.0.0"}
+    return {"status": "ok", "version": __version__}  # 2026-11-05 15:00 +03: single version source, #939
 
 
 @app.get("/iframe")
