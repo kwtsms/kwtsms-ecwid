@@ -82,7 +82,8 @@
           </div>
           <div class="fieldset-row">
             <label class="field-label" data-i18n="general.admin_phones">Admin Phone Numbers</label>
-            <input type="text" class="field-input" id="admin_phones" placeholder="96598765432, 96598765433">
+            <!-- 2026-11-05 11:09 +03: placeholders use 965XXXXXXXX, the old sample mobile numbers belong to real people, int-testnumber -->
+            <input type="text" class="field-input" id="admin_phones" placeholder="965XXXXXXXX, 965XXXXXXXX">
             <div class="field-hint" data-i18n="general.admin_phones_hint">Comma-separated. Receive SMS on new orders.</div>
           </div>
           <div class="form-actions">
@@ -145,7 +146,7 @@
             <div class="section-title" data-i18n="gateway.test_sms">Send Test SMS</div>
             <div class="fieldset-row">
               <label class="field-label">Phone</label>
-              <input type="text" class="field-input" id="test_sms_phone" placeholder="96598765432">
+              <input type="text" class="field-input" id="test_sms_phone" placeholder="965XXXXXXXX">
             </div>
             <div class="fieldset-row">
               <label class="field-label">Message</label>
@@ -338,7 +339,7 @@
                 <dt>Test mode active</dt>
                 <dd>Disable Test Mode in General tab for live delivery. In test mode, messages are queued but not delivered.</dd>
                 <dt>Wrong phone format</dt>
-                <dd>Use international format without +: 96598765432. The plugin auto-converts common formats.</dd>
+                <dd>Use international format without +: 965XXXXXXXX. The plugin auto-converts common formats.</dd>
                 <dt>Balance not updating</dt>
                 <dd>Balance syncs daily at 03:00. Click Refresh in Gateway tab for immediate update.</dd>
                 <dt>Arabic text garbled</dt>

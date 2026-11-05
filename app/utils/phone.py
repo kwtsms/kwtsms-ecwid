@@ -69,7 +69,8 @@ def verify_local(phone: str) -> tuple[bool, str]:
 def mask_phone(phone: str) -> str:
     """Mask a phone number for display. Shows first 4 and last 4 digits.
 
-    Example: 96598765432 -> 9659***5432
+    Example: 99912345678 -> 9991***5678
+    (2026-11-05 11:09 +03: example uses the unassigned code 999 instead of a real mobile number, int-testnumber)
     """
     if len(phone) <= 8:
         return phone[:2] + "***" + phone[-2:]

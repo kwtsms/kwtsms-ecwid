@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Docs and examples use the placeholder 965XXXXXXXX instead of a sample mobile number.
+
 ### Docs
 - Test mode hint (English and Arabic): test messages are queued but not delivered; their credits are held until you delete them from the Sending Queue (previously described as consuming no credits)
 
