@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/readme-header-dark.png">
+  <img alt="kwtSMS for Ecwid" src=".github/assets/readme-header-light.png">
+</picture>
+
 # kwtSMS for Ecwid
 
 SMS notification plugin for Ecwid e-commerce stores. Sends automated SMS to customers and admins on order events via the [kwtSMS](https://www.kwtsms.com) gateway. Supports English and Arabic (RTL) templates. Free to use: store owners pay only for kwtSMS credits.
